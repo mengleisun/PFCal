@@ -1,4 +1,5 @@
 #include<string>
+#include<string>
 #include<iostream>
 #include<fstream>
 #include<sstream>
@@ -10,39 +11,25 @@
 
 #include "TFile.h"
 #include "TTree.h"
-#include "TChain.h"
 #include "TH3F.h"
 #include "TH2F.h"
 #include "TH1F.h"
-#include "TF1.h"
 #include "TStyle.h"
 #include "TCanvas.h"
 #include "TLatex.h"
 #include "TRandom3.h"
-#include "TMatrixD.h"
-#include "TMatrixDSym.h"
-#include "TVectorD.h"
+#include "TChain.h"
 
-#include "HGCSSEvent.hh"
 #include "HGCSSInfo.hh"
+#include "HGCSSEvent.hh"
 #include "HGCSSSamplingSection.hh"
-#include "HGCSSSimHit.hh"
 #include "HGCSSRecoHit.hh"
-#include "HGCSSGenParticle.hh"
 #include "HGCSSParameters.hh"
 #include "HGCSSCalibration.hh"
 #include "HGCSSDigitisation.hh"
-#include "HGCSSDetector.hh"
-#include "HGCSSGeometryConversion.hh"
-#include "HGCSSPUenergy.hh"
+#include "HGCSSGenParticle.hh"
 
-#include "PositionFit.hh"
-#include "SignalRegion.hh"
-
-#include "Math/Vector3D.h"
-#include "Math/Vector3Dfwd.h"
-#include "Math/Point2D.h"
-#include "Math/Point2Dfwd.h"
+#include "TRandom3.h"
 
 using boost::lexical_cast;
 namespace po=boost::program_options;
@@ -58,17 +45,11 @@ bool testInputFile(std::string input, TFile* & file){
   return true;
 };
 
-
 int main(int argc, char** argv){//main  
 
   //Input output and config options
   std::string cfg;
   bool concept;
-  //size of signal region to perform Chi2 position fit.
-  //in units of 2.5mm cells to accomodate different granularities
-  unsigned nSR;
-  //maximum value of residuals to use in error matrix: discard positions that are too far away 
-  double residualMax;//mm
   unsigned pNevts;
   std::string filePath;
   std::string digifilePath;
@@ -78,9 +59,8 @@ int main(int argc, char** argv){//main
   std::string outPath;
   unsigned nSiLayers;
   //0:do just the energies, 1:do fit+energies, 2: do zpos+fit+energies
-  unsigned redoStep;
   unsigned debug;
-  bool applyPuMixFix;
+  bool selectEarlyDecay;
 
   po::options_description preconfig("Configuration"); 
   preconfig.add_options()("cfg,c",po::value<std::string>(&cfg)->required());
@@ -91,8 +71,6 @@ int main(int argc, char** argv){//main
   config.add_options()
     //Input output and config options //->required()
     ("concept",        po::value<bool>(&concept)->default_value(true))
-    ("nSR",            po::value<unsigned>(&nSR)->default_value(12))
-    ("residualMax",    po::value<double>(&residualMax)->default_value(25))
     ("pNevts,n",       po::value<unsigned>(&pNevts)->default_value(0))
     ("filePath,i",     po::value<std::string>(&filePath)->required())
     ("digifilePath", po::value<std::string>(&digifilePath)->default_value(""))
@@ -101,40 +79,46 @@ int main(int argc, char** argv){//main
     ("recoFileName,r", po::value<std::string>(&recoFileName)->required())
     ("outPath,o",      po::value<std::string>(&outPath)->required())
     ("nSiLayers",      po::value<unsigned>(&nSiLayers)->default_value(2))
-    ("redoStep",       po::value<unsigned>(&redoStep)->default_value(0))
     ("debug,d",        po::value<unsigned>(&debug)->default_value(0))
-    ("applyPuMixFix",  po::value<bool>(&applyPuMixFix)->default_value(false))
+    ("selectEarlyDecay",po::value<bool>(&selectEarlyDecay)->default_value(true))
     ;
 
-  // ("output_name,o",            po::value<std::string>(&outputname)->default_value("tmp.root"))
 
   po::store(po::command_line_parser(argc, argv).options(config).allow_unregistered().run(), vm);
   po::store(po::parse_config_file<char>(cfg.c_str(), config), vm);
   po::notify(vm);
 
 
-
-  std::string inFilePath = filePath+simFileName;
-
-  size_t end=outPath.find_last_of(".");
-  std::string outFolder = outPath.substr(0,end);
-
-
   std::cout << " -- Input parameters: " << std::endl
 	    << " -- Input file path: " << filePath << std::endl
 	    << " -- Digi Input file path: " << digifilePath << std::endl
 	    << " -- Output file path: " << outPath << std::endl
-	    << " -- Output folder: " << outFolder << std::endl
 	    << " -- Requiring " << nSiLayers << " si layers." << std::endl
-	    << " -- Number cells in signal region for fit: " << nSR << " *2.5*2.5 mm^2 cells" << std::endl
-	    << " -- Residual max considered for filling matrix and fitting: " << residualMax << " mm" << std::endl
-	    << " -- Apply PUMix fix? " << applyPuMixFix << std::endl
 	    << " -- Processing ";
   if (pNevts == 0) std::cout << "all events." << std::endl;
   else std::cout << pNevts << " events." << std::endl;
 
-  TRandom3 lRndm(1);
-  std::cout << " -- Random number seed: " << lRndm.GetSeed() << std::endl;
+  TRandom3 *lRndm = new TRandom3();
+  lRndm->SetSeed(1234);
+
+  std::cout << " -- Random3 seed = " << lRndm->GetSeed() << std::endl
+	    << " ----------------------------------------" << std::endl;
+
+  std::string inFilePath = filePath+simFileName;
+
+  bool isEM = false;
+  if (inFilePath.find("e-")!=inFilePath.npos || 
+      inFilePath.find("e+")!=inFilePath.npos) isEM = true;
+
+  std::size_t begin = inFilePath.find_last_of("_e")+1;
+  std::size_t end = inFilePath.find(".root");
+  unsigned genEn = 0;
+  std::cout << inFilePath << " " << begin << " " << end << " " << inFilePath.substr(begin,end-begin) << std::endl;
+  std::istringstream(inFilePath.substr(begin,end-begin))>>genEn;
+
+  if (selectEarlyDecay && isEM) {
+    selectEarlyDecay = false;
+  }
 
   /////////////////////////////////////////////////////////////
   //input
@@ -147,8 +131,6 @@ int main(int argc, char** argv){//main
     inputrec << filePath << "/" << recoFileName;
   else 
     inputrec << digifilePath << "/" << recoFileName;
-
-  //std::cout << inputsim.str() << " " << inputrec.str() << std::endl;
 
   HGCSSInfo * info;
 
@@ -203,7 +185,6 @@ int main(int argc, char** argv){//main
     return 1;
   }
 
-
   /////////////////////////////////////////////////////////////
   //Info
   /////////////////////////////////////////////////////////////
@@ -211,12 +192,11 @@ int main(int argc, char** argv){//main
   const double cellSize = info->cellSize();
   const unsigned versionNumber = info->version();
   const unsigned model = info->model();
-  
+
   //models 0,1 or 3.
   //bool isTBsetup = (model != 2);
   bool isCaliceHcal = versionNumber==23;//inFilePath.find("version23")!=inFilePath.npos || inFilePath.find("version_23")!=inFilePath.npos;
 
-  //extract input energy
 
   std::cout << " -- Version number is : " << versionNumber 
 	    << ", model = " << model
@@ -226,8 +206,13 @@ int main(int argc, char** argv){//main
 
   //initialise detector
   HGCSSDetector & myDetector = theDetector();
- 
+
   myDetector.buildDetector(versionNumber,concept,isCaliceHcal);
+
+  //initialise calibration class
+  HGCSSCalibration mycalib(inFilePath);
+  HGCSSDigitisation myDigitiser;
+  myDigitiser.setRandomSeed(lRndm->GetSeed());
 
   const unsigned nLayers = myDetector.nLayers();
   const unsigned nSections = myDetector.nSections();
@@ -235,12 +220,6 @@ int main(int argc, char** argv){//main
   std::cout << " -- N layers = " << nLayers << std::endl
 	    << " -- N sections = " << nSections << std::endl;
 
-
-  HGCSSGeometryConversion geomConv(inFilePath,model,cellSize);
-  //set granularity to get cellsize for PU subtraction
-  std::vector<unsigned> granularity;
-  granularity.resize(nLayers,4);
-  geomConv.setGranularity(granularity);
 
   //////////////////////////////////////////////////
   //////////////////////////////////////////////////
@@ -259,43 +238,19 @@ int main(int argc, char** argv){//main
   }
   outputFile->cd();
 
+  TH2F *p_FHvsBH = new TH2F("p_FHvsBH",";FHcal (MIPs); BHcal (MIPs)",200,0,genEn*100, 200,0,genEn*100);
+  TH1F *p_layerN = new TH1F("p_layerN",";Layer Number; Hit Number", 70, 0, 70);
+  TH1F *p_secOcc = new TH1F("p_secOcc",";Section Number; Hit Number", 7, 0, 7);
+  TH2F *p_FHvsBHsim = new TH2F("p_FHvsBHsim","SimHit energy;FHcal (MIPs); BHcal (MIPs)",200,0,genEn*1000, 200,0,genEn*1000);
 
-  ///initialise PU density object
+  //////////////////////////////////////////////////
+  //////////////////////////////////////////////////
+  ///////// loop over events // ////////////////////
+  //////////////////////////////////////////////////
+  //////////////////////////////////////////////////
 
-  HGCSSPUenergy puDensity("data/EnergyDensity.dat");
 
-
-    //////////////////////////////////////////////////
-    //////////////////////////////////////////////////
-    ///////// positionFit /////////////////////////////
-    //////////////////////////////////////////////////
-    //////////////////////////////////////////////////
-  
   const unsigned nEvts = ((pNevts > lSimTree->GetEntries() || pNevts==0) ? static_cast<unsigned>(lSimTree->GetEntries()) : pNevts) ;
-  
-
-  PositionFit lChi2Fit(nSR,residualMax,nLayers,nSiLayers,applyPuMixFix,debug);
-  lChi2Fit.initialise(outputFile,"PositionFit",outFolder,geomConv,puDensity);
-
-  //try getting z position from input file, if doesn't exit,
-  //perform first loop over simhits to find z positions of layers
-  if ((redoStep<2 && !lChi2Fit.getZpositions(versionNumber)) || redoStep>1)
-    lChi2Fit.getZpositions(versionNumber,lSimTree,nEvts);
-  
-  //perform second loop over events to find positions to fit and get energies
-  SignalRegion SignalEnergy(outFolder, nLayers, nEvts, geomConv, puDensity,applyPuMixFix,versionNumber);
-  SignalEnergy.initialise(outputFile,"Energies");
-
-  //initialise
-  bool dofit = redoStep>0 || !SignalEnergy.initialiseFitPositions();
-  if (!dofit && redoStep==0) std::cout << " -- Info: fit positions taken from file on disk." << std::endl;
-  else std::cout << " -- Info: redoing least square fit." << std::endl;
-
-  if (redoStep>0 || (redoStep==0 && dofit)){
-    lChi2Fit.getInitialPositions(lSimTree,lRecTree,nEvts);
-    lChi2Fit.finaliseErrorMatrix();
-    lChi2Fit.initialiseLeastSquareFit();
-  }
   
   //loop on events
   HGCSSEvent * event = 0;
@@ -313,34 +268,96 @@ int main(int argc, char** argv){//main
   lRecTree->SetBranchAddress("HGCSSRecoHitVec",&rechitvec);
   if (lRecTree->GetBranch("nPuVtx")) lRecTree->SetBranchAddress("nPuVtx",&nPuVtx);
 
+  double Ereco[nSections];
+  double Esim[nSections];
+  for(unsigned iD(0); iD<nSections; ++iD){
+       Ereco[iD] = 0;
+       Esim[iD] = 0;
+       }
+
   for (unsigned ievt(0); ievt<nEvts; ++ievt){//loop on entries
     if (debug) std::cout << "... Processing entry: " << ievt << std::endl;
     else if (ievt%50 == 0) std::cout << "... Processing entry: " << ievt << std::endl;
-
+    
     lSimTree->GetEntry(ievt);
     lRecTree->GetEntry(ievt);
-    if (dofit) {
-      FitResult fit;
-      if ( lChi2Fit.performLeastSquareFit(ievt,fit)==0 ){
-	SignalEnergy.fillEnergies(ievt,(*ssvec),(*simhitvec),(*rechitvec),nPuVtx,fit);
-      }
-      else std::cout << " -- Fit failed." << std::endl;
+
+    // first interaction
+    unsigned firstInteraction = 0;
+    for (unsigned iH(0); iH<(*simhitvec).size(); ++iH){//loop on hits
+      HGCSSSimHit lHit = (*simhitvec)[iH];
+
+      //discard some si layers...
+      //if (lHit.silayer() >= nSiLayers) continue; 
+
+      unsigned simlayer = lHit.layer();
+      double simenergy  = lHit.energy()*mycalib.MeVToMip(simlayer);
+ 
+      unsigned simsec =  myDetector.getSection(simlayer)-3;
+      double simabsweight = (*ssvec)[simlayer].volX0trans()/(*ssvec)[0].volX0trans();
+
+      Esim[simsec] += simenergy*simabsweight; 
+
+      unsigned layer = lHit.layer();
+      if ( firstInteraction == 0 &&
+	   (lHit.nNeutrons()>0 || 
+	    lHit.nProtons()>0 ||
+	    lHit.nHadrons()>0 ) && 
+	   lHit.mainParentTrackID() > 0
+	   ) firstInteraction = layer;
     }
-    else SignalEnergy.fillEnergies(ievt,(*ssvec),(*simhitvec),(*rechitvec),nPuVtx);
 
-  }//loop on entries
 
-  //finalise
+    
+    for (unsigned iH(0); iH<(*rechitvec).size(); ++iH){//loop on rechits
+      HGCSSRecoHit lHit = (*rechitvec)[iH];
+      
+      double posx = lHit.get_x();
+      double posy = lHit.get_y();
+      
+      double energy = lHit.energy();
+      unsigned layer = lHit.layer();
 
-  if (dofit) lChi2Fit.finaliseFit();
-  SignalEnergy.finalise();
+      if (layer >= nLayers) {
+	std::cout << " WARNING! RecoHits with layer " << layer << " outside of detector's definition range ! Please fix the digitiser or the detector definition used here. Ignoring..." << std::endl;
+	continue;
+      }
+      unsigned sec =  myDetector.getSection(layer)-3;
+
+      double absweight = (*ssvec)[layer].volX0trans()/(*ssvec)[0].volX0trans();
+ 
+      Ereco[sec] += energy*absweight;
+      p_layerN->Fill(layer);
+      p_secOcc->Fill( myDetector.getSection(layer) );      
+
+    }//loop on rechits
+   
+ 
+    double Eecal = 0;
+    if (myDetector.section(DetectorEnum::FECAL)<nSections) Eecal += myDigitiser.MIPtoGeV(myDetector.subDetectorByEnum(DetectorEnum::FECAL),Ereco[myDetector.section(DetectorEnum::FECAL)]);
+    if (myDetector.section(DetectorEnum::MECAL)<nSections) Eecal += myDigitiser.MIPtoGeV(myDetector.subDetectorByEnum(DetectorEnum::MECAL),Ereco[myDetector.section(DetectorEnum::MECAL)]);
+    if (myDetector.section(DetectorEnum::BECAL)<nSections) Eecal += myDigitiser.MIPtoGeV(myDetector.subDetectorByEnum(DetectorEnum::BECAL),Ereco[myDetector.section(DetectorEnum::BECAL)]);
+
+    double Efhcal = 0;
+    if (myDetector.section(DetectorEnum::FHCAL)<nSections) Efhcal += Ereco[myDetector.section(DetectorEnum::FHCAL)]; 
+    double Ebhcal = 0;
+    if (myDetector.section(DetectorEnum::BHCAL1)<nSections) Ebhcal += Ereco[myDetector.section(DetectorEnum::BHCAL1)];
+    if (myDetector.section(DetectorEnum::BHCAL2)<nSections) Ebhcal += Ereco[myDetector.section(DetectorEnum::BHCAL2)];
+    
+    p_FHvsBH->Fill(Efhcal, Ebhcal);
+    p_FHvsBHsim->Fill(Esim[0],Esim[1]);
+
+   for (unsigned iD(0); iD<nSections; ++iD){
+     Ereco[iD] = 0;
+     Esim[iD] = 0;
+   }
+   
+  }//loop on events
+
 
   outputFile->Write();
-  //outputFile->Close();
   
-  std::cout << " - End of egammaResolution program." << std::endl;
-
   return 0;
   
-
+  
 }//main

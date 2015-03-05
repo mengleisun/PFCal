@@ -32,9 +32,9 @@ parser.add_option('-S', '--no-submit'   ,    action="store_true",  dest='nosubmi
 enlist=[0]
 #if opt.dogun : enlist=[3,5,7,10,20,30,40,50,60,70,80,90,100,125,150,175,200]
 #if opt.dogun : enlist=[25]
-if opt.dogun : enlist=[2,5,10,20,40,60,80,100,150,200]#,300,400,500]
+if opt.dogun : enlist=[10]#,300,400,500]
 
-INPATHPU="root://eoscms//eos/cms/store/user/msun/V12/MinBias/"
+INPATHPU="root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V12/MinBias/"
 
 if opt.version==13:
     INPATHPU="root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V13/MinBias/"
@@ -42,7 +42,7 @@ elif opt.version==25:
     INPATHPU="root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V25/MinBias/"
 
 #nPuVtxlist=[0,140,200]
-nPuVtxlist=[0,140]
+nPuVtxlist=[0]
 
 #in %
 interCalibList=[2];#0,1,2,3,4,5,10,15,20,50]
@@ -95,7 +95,7 @@ for nPuVtx in nPuVtxlist:
             if en>0 : outDir='%s/et_%d'%(outDir,en)
             eosDir='%s/git%s/%s'%(opt.eos,opt.gittag,opt.datatype)
             eosDirIn='%s/git%s/%s'%(opt.eosin,opt.gittag,opt.datatype)
-            if opt.alpha>0 : outDir='%s/a_%3.3f/'%(outDir,opt.alpha) 
+            if opt.alpha>0 : outDir='%s/eta_%3.3f/'%(outDir,opt.alpha) 
             if opt.phi!=0.5 : outDir='%s/phi_%3.3fpi/'%(outDir,opt.phi) 
             if (opt.run>=0) : outDir='%s/run_%d/'%(outDir,opt.run)
         
@@ -110,7 +110,7 @@ for nPuVtx in nPuVtxlist:
             #scriptFile.write('cd %s\n'%(outDir))
             outTag='version%d_model%d_%s'%(opt.version,opt.model,bval)
             if en>0 : outTag='%s_et%d'%(outTag,en)
-            if opt.alpha>0 : outTag='%s_alpha%3.3f'%(outTag,opt.alpha) 
+            if opt.alpha>0 : outTag='%s_eta%3.3f'%(outTag,opt.alpha) 
             if opt.phi!=0.5 : outTag='%s_phi%3.3fpi'%(outTag,opt.phi) 
             if (opt.run>=0) : outTag='%s_run%d'%(outTag,opt.run)
             scriptFile.write('localdir=`pwd`\n')
@@ -143,8 +143,8 @@ for nPuVtx in nPuVtxlist:
             
             #submit
             os.system('chmod u+rwx %s/runDigiJob%s.sh'%(outDir,suffix))
-            if opt.nosubmit : os.system('echo bsub -q %s %s/runDigiJob%s.sh'%(myqueue,outDir,suffix)) 
-            else: os.system("bsub -q %s \'%s/runDigiJob%s.sh\'"%(myqueue,outDir,suffix))
+            if opt.nosubmit : os.system('echo bsub  -o /dev/null -e /dev/null -q %s %s/runDigiJob%s.sh'%(myqueue,outDir,suffix)) 
+            else: os.system("bsub  -o /dev/null -e /dev/null -q %s \'%s/runDigiJob%s.sh\'"%(myqueue,outDir,suffix))
 
 
 

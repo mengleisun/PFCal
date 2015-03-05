@@ -69,7 +69,7 @@ int main(int argc, char** argv){//main
   /////////////////////////////////////////////////////////////
   //parameters
   /////////////////////////////////////////////////////////////
-  const unsigned nReqA = 10;
+  const unsigned nReqA = 9;
   const unsigned nPar = static_cast<unsigned>(argc);
   if (nPar < nReqA-1) {
     std::cout << " Usage: "
@@ -79,10 +79,10 @@ int main(int argc, char** argv){//main
               << "<granularities \"layer_i-layer_j:factor,layer:factor,...\">"<< std::endl
               << "<noise (in Mips) \"layer_i-layer_j:factor,layer:factor,...\">"<< std::endl
               << "<threshold (in ADC counts) \"layer_i-layer_j:factor,layer:factor,...\">"<< std::endl
-              << "<intercalib factor in %>" << std::endl
               << "<number of PU>" << std::endl
               << "<full path to MinBias file if nPU!=0>" << std::endl
               << std::endl
+              << "<optional: model (default=\"model2\")> "  << std::endl
               << "<optional: randomSeed (default=0)> "  << std::endl
               << "<optional: debug (default=0)>" << std::endl
               << "<optional: save sim hits (default=0)> " << std::endl
@@ -98,14 +98,8 @@ int main(int argc, char** argv){//main
   std::string granulStr = argv[4];
   std::string noiseStr = argv[5];
   std::string threshStr = argv[6];
-  const unsigned interCalib = atoi(argv[7]);
-  const unsigned nPU = atoi(argv[8]);
-  std::string puPath;
-  if (nPar > nReqA-1) puPath = argv[9];
-  if (nPU>0 && puPath.size()==0) {
-    std::cout << " -- Error! Missing full path to minbias file. Exiting." << std::endl;
-    return 1;
-  }
+  const int nPU = atoi(argv[7]);
+  std::string puPath = argv[8];
 
   std::cout << " ----------------------------------------" << std::endl
             << " -- Input parameters: " << std::endl
@@ -118,9 +112,7 @@ int main(int argc, char** argv){//main
             << " -- Granularities: " << granulStr << std::endl
             << " -- noise: " << noiseStr << std::endl
             << " -- thresholds: " << threshStr << std::endl
-            << " -- intercalibration factor (in %): " << interCalib << std::endl
-            << " -- number of PU: " << nPU << std::endl
-	    << " -- pu file path: " << puPath << std::endl
+            << " -- number of PU:" << nPU << std::endl
     ;
 
 	    
@@ -130,7 +122,7 @@ int main(int argc, char** argv){//main
   bool pSaveDigis = 0;
   bool pSaveSims = 0;
   bool pMakeJets = false;
-  //if (nPar > nReqA-1) pModel = argv[nReqA];
+  //if (nPar > nReqA) pModel = argv[nReqA];
   if (nPar > nReqA) std::istringstream(argv[nReqA])>>pSeed;
   if (nPar > nReqA+1) {
     debug = atoi(argv[nReqA+1]);
@@ -207,7 +199,6 @@ int main(int argc, char** argv){//main
         std::ostringstream puInput;
         std::string temp = std::string(eoslsName).substr(0,strlen(eoslsName)-1);
         if(temp.find("Digi")!=temp.npos)continue;
-        if(temp.find("pile")!=temp.npos)continue;
         puInput << puPath << temp;
         puTree->AddFile(puInput.str().c_str());
         std::cout << "Adding MinBias file:" << puInput.str().c_str() << std::endl;
@@ -295,14 +286,14 @@ int main(int argc, char** argv){//main
   geomConv.setGranularity(granularity);
   geomConv.initialiseHistos();
 
+  std::cout << " -- Set Random3 seed to: " << pSeed << std::endl;
+
   TRandom3 *lRndm = new TRandom3();
   lRndm->SetSeed(pSeed);
   myDigitiser.setRandomSeed(pSeed);
 
   std::cout << " -- Random3 seed = " << lRndm->GetSeed() << std::endl
 	    << " ----------------------------------------" << std::endl;
-
-  myDigitiser.setIntercalibrationFactor(interCalib);
 
   /////////////////////////////////////////////////////////////
   //output
@@ -385,77 +376,58 @@ int main(int argc, char** argv){//main
 	subdetLayer = layer-subdet.layerIdMin;
 	prevLayer = layer;
 	if (debug > 1) std::cout << " - layer " << layer << " " << subdet.name << " " << subdetLayer << std::endl;
-      }
-      double energy = lHit.energy()*mycalib.MeVToMip(layer);
-      double posx = lHit.get_x(cellSize);
-      double posy = lHit.get_y(cellSize);
-      double posz = lHit.get_z();
-      double realtime = mycalib.correctTime(lHit.time(),posx,posy,posz);
-      bool passTime = myDigitiser.passTimeCut(type,realtime);
-      if (!passTime) continue;
-
-      if (energy>0 && 
-	  lHit.silayer() < geomConv.getNumberOfSiLayers(type)//,lHit.eta()) 
-	  ){
-	if (debug > 1) std::cout << " hit " << iH 
-				 << " lay " << layer  
-				 << " x " << posx 
-				 << " y " << posy
-				 << " z " << posz
-				 << " t " << lHit.time() << " " << realtime
-				 << std::endl;
-	geomConv.fill(type,subdetLayer,energy,realtime,posx,posy,posz);
-      }
+      }      
 
     }//loop on input simhits
 
     if(nPU!=0){
       //get PU events
-      //std::vector<unsigned> ipuevt;
+      std::vector<unsigned> ipuevt;
 
       //get poisson <140>
       nPuVtx = lRndm->Poisson(nPU);
-      //ipuevt.resize(nPuVtx,1);
+      ipuevt.resize(nPuVtx,1);
 
       std::cout << " -- Adding " << nPuVtx << " events to signal event: " << ievt << std::endl;
       for (unsigned iV(0); iV<nPuVtx; ++iV){//loop on interactions
-        unsigned ipuevt = lRndm->Integer(nPuEvts);
+        ipuevt[iV] = lRndm->Integer(nPuEvts);
 
-        puTree->GetEntry(ipuevt);
+        puTree->GetEntry(ipuevt[iV]);
         //lRecoHits.reserve(lRecoHits.size()+(*puhitvec).size());
         prevLayer = 10000;
         type = DetectorEnum::FECAL;
         subdetLayer=0;
         for (unsigned iH(0); iH<(*puhitvec).size(); ++iH){//loop on hits
           HGCSSSimHit lHit = (*puhitvec)[iH];
-	  if (lHit.energy()>0){
-	    unsigned layer = lHit.layer();
-	    if (layer != prevLayer){
-	      const HGCSSSubDetector & subdet = myDetector.subDetectorByLayer(layer);
-	      type = subdet.type;
-	      subdetLayer = layer-subdet.layerIdMin;
-	      prevLayer = layer;
-	      //std::cout << " - layer " << layer << " " << subdet.name << " " << subdetLayer << std::endl;
-	    }
-	    if (lHit.silayer() < geomConv.getNumberOfSiLayers(type)){//(type,lHit.eta())
-	      double energy = lHit.energy()*mycalib.MeVToMip(layer);
-	      double posx = lHit.get_x(cellSize);
-	      double posy = lHit.get_y(cellSize);
-	      double posz = lHit.get_z();
-	      double realtime = mycalib.correctTime(lHit.time(),posx,posy,posz);
-	      bool passTime = myDigitiser.passTimeCut(type,realtime);
-	      if (!passTime) continue;
-	      
-	      if (debug > 1) std::cout << " hit " << iH
-				       << " lay " << layer
-				       << " x " << posx
-				       << " y " << posy
-				       << " z " << posz
-				       << " t " << lHit.time() << " " << realtime
-				       << std::endl;
-	      geomConv.fill(type,subdetLayer,energy,realtime,posx,posy,posz);
-	    }
-	  }
+
+          unsigned layer = lHit.layer();
+          if (layer != prevLayer){
+            const HGCSSSubDetector & subdet = myDetector.subDetectorByLayer(layer);
+            type = subdet.type;
+            subdetLayer = layer-subdet.layerIdMin;
+            prevLayer = layer;
+            //std::cout << " - layer " << layer << " " << subdet.name << " " << subdetLayer << std::endl;
+          }
+           double energy = lHit.energy()*mycalib.MeVToMip(layer);
+           double posx = lHit.get_x(cellSize);
+           double posy = lHit.get_y(cellSize);
+           double posz = lHit.get_z();
+           double realtime = mycalib.correctTime(lHit.time(),posx,posy,posz);
+           bool passTime = myDigitiser.passTimeCut(type,realtime);
+           if (!passTime) continue;
+
+           if (energy>0 &&
+               lHit.silayer() < geomConv.getNumberOfSiLayers(type)//,lHit.eta()) 
+               ){
+             if (debug > 1) std::cout << " hit " << iH
+                                      << " lay " << layer
+                                      << " x " << posx
+                                      << " y " << posy
+                                      << " z " << posz
+                                      << " t " << lHit.time() << " " << realtime
+                                      << std::endl;
+             geomConv.fill(type,subdetLayer,energy,realtime,posx,posy,posz);
+           }
 
         }//loop on hits
       }//loop on interactions
