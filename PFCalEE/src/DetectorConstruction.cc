@@ -28,9 +28,9 @@ using namespace std;
 DetectorConstruction::DetectorConstruction(G4int ver, G4int mod) : version_(ver), model_(mod), addPrePCB_(false)
 {
   //radiation lengths: cf. http://pdg.lbl.gov/2012/AtomicNuclearProperties/
-  //W 3.504 cm
-  //Pb 5.612 cm
-  //Cu 14.36 cm
+  //W 3.504 mm
+  //Pb 5.612 mm
+  //Cu 14.36 mm
   switch(version_)
     {
       //cf. http://arxiv.org/abs/0805.4833
@@ -51,6 +51,85 @@ DetectorConstruction::DetectorConstruction(G4int ver, G4int mod) : version_(ver)
 	for(unsigned i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(lThick,lEle) );
 	break;
       }
+
+    case v_HGCALEE_v6: case v_HGCAL_v6:
+      {
+	G4cout << "[DetectorConstruction] starting v_HCALEE_v6"<< G4endl;
+	G4double airThick = 3*mm;
+	G4double pcbThick = 2*mm;
+
+	std::vector<G4double> lThickL;
+	std::vector<std::string> lEleL;
+	lThickL.push_back(2.*mm);lEleL.push_back("Al");
+	lThickL.push_back(26.*mm);lEleL.push_back("Foam");
+	lThickL.push_back(2.*mm);lEleL.push_back("Al");
+	lThickL.push_back(0.5*mm);lEleL.push_back("CFMix");
+	lThickL.push_back(2.0*mm);lEleL.push_back("W");
+	lThickL.push_back(0.5*mm);lEleL.push_back("CFMix");
+	lThickL.push_back(0.5*mm);lEleL.push_back("Cu");
+	lThickL.push_back(airThick);lEleL.push_back("Air");
+	lThickL.push_back(pcbThick);lEleL.push_back("PCB");
+	lThickL.push_back(0.1*mm);lEleL.push_back("Si");
+	lThickL.push_back(0.1*mm);lEleL.push_back("Si");
+	lThickL.push_back(0.1*mm);lEleL.push_back("Si");
+
+	std::vector<G4double> lThickR;
+	std::vector<std::string> lEleR;
+	lThickR.push_back(0.6*mm);lEleR.push_back("WCu");
+	lThickR.push_back(6*mm);lEleR.push_back("Cu");
+	lThickR.push_back(0.6*mm);lEleR.push_back("WCu");
+	lThickR.push_back(0.1*mm);lEleR.push_back("Si");
+	lThickR.push_back(0.1*mm);lEleR.push_back("Si");
+	lThickR.push_back(0.1*mm);lEleR.push_back("Si");
+	lThickR.push_back(pcbThick);lEleR.push_back("PCB");
+	lThickR.push_back(airThick);lEleR.push_back("Air");
+
+	m_caloStruct.push_back( SamplingSection(lThickL,lEleL) );
+	m_caloStruct.push_back( SamplingSection(lThickR,lEleR) );
+
+	lThickL.clear();
+	lEleL.clear();
+	lThickL.push_back(0.5*mm);lEleL.push_back("Cu");
+	lThickL.push_back(0.5*mm);lEleL.push_back("CFMix");
+	lThickL.push_back(2.0*mm);lEleL.push_back("W");
+	lThickL.push_back(0.5*mm);lEleL.push_back("CFMix");
+	lThickL.push_back(0.5*mm);lEleL.push_back("Cu");
+	lThickL.push_back(airThick);lEleL.push_back("Air");
+	lThickL.push_back(pcbThick);lEleL.push_back("PCB");
+	lThickL.push_back(0.1*mm);lEleL.push_back("Si");
+	lThickL.push_back(0.1*mm);lEleL.push_back("Si");
+	lThickL.push_back(0.1*mm);lEleL.push_back("Si");
+	for(unsigned i=0; i<4; i++) {
+	  m_caloStruct.push_back( SamplingSection(lThickL,lEleL) );
+	  m_caloStruct.push_back( SamplingSection(lThickR,lEleR) );
+	}
+
+	lThickL[2] = 2.8*mm;
+	lThickR[0] = 1.2*mm;
+	lThickR[2] = 1.2*mm;
+	for(unsigned i=0; i<5; i++) {
+	  m_caloStruct.push_back( SamplingSection(lThickL,lEleL) );
+	  m_caloStruct.push_back( SamplingSection(lThickR,lEleR) );
+	}
+
+	lThickL[2] = 4.2*mm;
+	lThickR[0] = 2.2*mm;
+	lThickR[2] = 2.2*mm;
+	for(unsigned i=0; i<4; i++) {
+	  m_caloStruct.push_back( SamplingSection(lThickL,lEleL) );
+	  if (i==3) {lThickR.push_back(0.5*mm);lEleR.push_back("Cu");}
+	  m_caloStruct.push_back( SamplingSection(lThickR,lEleR) );
+	}
+	
+	if(version_==v_HGCAL_v6){
+	  //add HCAL
+	  buildHGCALFHE(6);
+	  buildHGCALBHE(6);
+	}
+
+	break;
+      }
+
     case v_HGCALEE_v5: case v_HGCALEE_v5_gap4: case v_HGCAL_v5: case v_HGCAL_v5_gap4:
       {
 	G4cout << "[DetectorConstruction] starting v_HCALEE_v5"<< G4endl;
@@ -192,17 +271,31 @@ DetectorConstruction::DetectorConstruction(G4int ver, G4int mod) : version_(ver)
 	}
 	break;
       }
-    case v_HGCALHE: case v_HGCALHE_CMSSWv4:
+    case v_HGCALHE: case v_HGCALHE_CMSSWv4: case v_HGCALHE_v6:
       {
 	//add HCAL
-	if (version_== v_HGCALHE_CMSSWv4) buildHGCALFHE(41);
-	else buildHGCALFHE(4);
-	buildHGCALBHE(4);
+	if (version_== v_HGCALHE_CMSSWv4) {
+	  buildHGCALFHE(41);
+	  buildHGCALBHE(4);
+	}
+	else if (version_== v_HGCALHE_v6) {
+	  buildHGCALFHE(6);
+	  buildHGCALBHE(6);
+	}
+	else {
+	  buildHGCALFHE(4);
+	  buildHGCALBHE(4);
+	}
 	break;
       }
     case v_HGCALHEScint:
       {
 	buildHGCALBHE(4);
+	break;
+      }
+    case v_HGCALBE_v6:
+      {
+	buildHGCALBHE(6);
 	break;
       }
     case v_HGCALHE_CALICE:
@@ -250,42 +343,104 @@ void DetectorConstruction::buildHGCALFHE(const unsigned aVersion){
   if(version_==v_HGCAL_v5_gap4) airThick = 4*mm;
   std::vector<G4double> lThick;
   std::vector<std::string> lEle;
-  lThick.push_back(50.*mm);lEle.push_back("SSteel");
-  if (aVersion==41) {lThick.push_back(52.*mm);lEle.push_back("Pb");}
-  else {lThick.push_back(26.*mm);lEle.push_back("Brass");}
-  lThick.push_back(3*mm); lEle.push_back("Cu");
-  lThick.push_back(0.1*mm);lEle.push_back("Si");
-  lThick.push_back(0.1*mm);lEle.push_back("Si");
-  lThick.push_back(0.1*mm);lEle.push_back("Si");
-  G4double pcbthick = (aVersion==4)? 2*mm : 1.2*mm;
-  lThick.push_back(pcbthick);lEle.push_back("PCB");
-  lThick.push_back(airThick);lEle.push_back("Air");
-  
-  for(unsigned i=0; i<12; i++) {
-    //add an intermediate Si layer to study resolution improvement
-    if (i>0) lThick[0] = 0;
-    if (aVersion!=41){
-      lThick[2] = 0;
-      lThick[6] = 0;
-      lThick[7] = 0;
-      m_caloStruct.push_back( SamplingSection(lThick,lEle) );
-      lThick[0] = 0;
-      lThick[2] = 3*mm;
-      lThick[6] = pcbthick;
-      lThick[7] = airThick;
-    }
-    if (i==11) lThick[7] = 103.6*mm;
+  if(aVersion==6) {
+    airThick = 3*mm;
+    G4double pcbthick = 2*mm;
+    //putting all absorber in front of each Si layer to have correct reweighting 
+    lThick.push_back(15.*mm);lEle.push_back("SSteel");
+    lThick.push_back(45.*mm);lEle.push_back("Brass");
+    lThick.push_back(0.5*mm); lEle.push_back("Cu");
+    lThick.push_back(airThick);lEle.push_back("Air");
+    lThick.push_back(pcbthick);lEle.push_back("PCB");
+    lThick.push_back(0.1*mm);lEle.push_back("Si");
+    lThick.push_back(0.1*mm);lEle.push_back("Si");
+    lThick.push_back(0.1*mm);lEle.push_back("Si");
     m_caloStruct.push_back( SamplingSection(lThick,lEle) );
+
+    lThick.clear();
+    lEle.clear();
+    lThick.push_back(1.);lEle.push_back("CFMix");
+    lThick.push_back(6.); lEle.push_back("Cu");
+    lThick.push_back(45.*mm);lEle.push_back("Brass");
+    lThick.push_back(0.5*mm); lEle.push_back("Cu");
+    lThick.push_back(airThick);lEle.push_back("Air");
+    lThick.push_back(pcbthick);lEle.push_back("PCB");
+    lThick.push_back(0.1*mm);lEle.push_back("Si");
+    lThick.push_back(0.1*mm);lEle.push_back("Si");
+    lThick.push_back(0.1*mm);lEle.push_back("Si");
+    for(unsigned i=0; i<11; i++) {
+      m_caloStruct.push_back( SamplingSection(lThick,lEle) );
+    }
+  }
+  else {
+    lThick.push_back(50.*mm);lEle.push_back("SSteel");
+    if (aVersion==41) {lThick.push_back(52.*mm);lEle.push_back("Pb");}
+    else {lThick.push_back(26.*mm);lEle.push_back("Brass");}
+    lThick.push_back(3*mm); lEle.push_back("Cu");
+    lThick.push_back(0.1*mm);lEle.push_back("Si");
+    lThick.push_back(0.1*mm);lEle.push_back("Si");
+    lThick.push_back(0.1*mm);lEle.push_back("Si");
+    G4double pcbthick = (aVersion==4)? 2*mm : 1.2*mm;
+    lThick.push_back(pcbthick);lEle.push_back("PCB");
+    lThick.push_back(airThick);lEle.push_back("Air");
+    
+    for(unsigned i=0; i<12; i++) {
+      //add an intermediate Si layer to study resolution improvement
+      if (i>0) lThick[0] = 0;
+      if (aVersion!=41){
+	lThick[2] = 0;
+	lThick[6] = 0;
+	lThick[7] = 0;
+	m_caloStruct.push_back( SamplingSection(lThick,lEle) );
+	lThick[0] = 0;
+	lThick[2] = 3*mm;
+	lThick[6] = pcbthick;
+	lThick[7] = airThick;
+      }
+      if (i==11) lThick[7] = 103.6*mm;
+      m_caloStruct.push_back( SamplingSection(lThick,lEle) );
+    }
   }
 }
 //
 void DetectorConstruction::buildHGCALBHE(const unsigned aVersion){
   std::vector<G4double> lThick;
   std::vector<std::string> lEle;
+  //first layer
+  lThick.push_back(1.*mm);lEle.push_back("CFMix");
+  lThick.push_back(6.*mm); lEle.push_back("Cu");
+  lThick.push_back(65.*mm);lEle.push_back("Air");
+  lThick.push_back(2.*mm);lEle.push_back("Al");
+  lThick.push_back(26.*mm);lEle.push_back("Foam");
+  lThick.push_back(2.*mm);lEle.push_back("Al");
   lThick.push_back(78.*mm);lEle.push_back("Brass");
-  lThick.push_back(9.*mm);lEle.push_back("Scintillator");
-  unsigned maxi = (aVersion==4)?10:12;
-  for(unsigned i=0; i<maxi; i++) m_caloStruct.push_back( SamplingSection(lThick,lEle) );
+  if (aVersion==6) {
+    lThick.push_back(2.6*mm);lEle.push_back("Air");
+    lThick.push_back(3.8*mm);lEle.push_back("Scintillator");
+    lThick.push_back(2.6*mm);lEle.push_back("Air");
+  }
+  else {
+    lThick.push_back(9.*mm);lEle.push_back("Scintillator");
+  }
+  m_caloStruct.push_back( SamplingSection(lThick,lEle) );
+
+  //other layers
+  lThick.clear();
+  lEle.clear();
+  lThick.push_back(78.*mm);lEle.push_back("Brass");
+  if (aVersion==6) {
+    lThick.push_back(2.6*mm);lEle.push_back("Air");
+    lThick.push_back(3.8*mm);lEle.push_back("Scintillator");
+    lThick.push_back(2.6*mm);lEle.push_back("Air");
+  }
+  else {
+    lThick.push_back(9.*mm);lEle.push_back("Scintillator");
+  }
+
+  unsigned maxi = (aVersion==4)?9:11;
+  for(unsigned i=0; i<maxi; i++) {
+    m_caloStruct.push_back( SamplingSection(lThick,lEle) );
+  }
 }
 //
 DetectorConstruction::~DetectorConstruction() { delete m_detectorMessenger;}
@@ -297,6 +452,7 @@ void DetectorConstruction::DefineMaterials()
   m_materials["Abs"] = (version_== v_CALICE || version_==v_HGCALEE_W) ? 
     nistManager->FindOrBuildMaterial("G4_W",false) :
     nistManager->FindOrBuildMaterial("G4_Pb",false);
+  m_materials["Al"] = nistManager->FindOrBuildMaterial("G4_Al",false); 
   m_materials["W"] = nistManager->FindOrBuildMaterial("G4_W",false); 
   m_materials["Pb"] = nistManager->FindOrBuildMaterial("G4_Pb",false); 
   m_materials["Cu"] = nistManager->FindOrBuildMaterial("G4_Cu",false); 
@@ -349,6 +505,14 @@ void DetectorConstruction::DefineMaterials()
   m_materials["CFMix"]->AddMaterial(m_materials["Air"]  , 0.009);
   m_materials["CFMix"]->AddMaterial(m_materials["PVC"]  , 0.872);
   m_materials["CFMix"]->AddMaterial(m_materials["Polystyrole"]  , 0.119);
+
+  m_materials["Foam"]= new G4Material("Foam",0.0999*g/cm3,2);
+  m_materials["Foam"]->AddMaterial(m_materials["C"]  , 0.856);
+  m_materials["Foam"]->AddMaterial(m_materials["H"]  , 0.144);
+
+  m_materials["WCu"]= new G4Material("WCu",14.979*g/cm3,2);
+  m_materials["WCu"]->AddMaterial(m_materials["W"]  , 75*perCent);
+  m_materials["WCu"]->AddMaterial(m_materials["Cu"]  , 25*perCent);
 
 }
 
@@ -440,6 +604,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   char nameBuf[10];
   G4CSGSolid *solid;
 
+  G4double totalLengthX0 = 0;
+  G4double totalLengthL0 = 0;
+
   for(size_t i=0; i<m_caloStruct.size(); i++)
     {
 
@@ -461,7 +628,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 	  G4LogicalVolume *logi = new G4LogicalVolume(solid, m_materials[eleName], baseName+"log");
 	  m_caloStruct[i].ele_X0[ie] = m_materials[eleName]->GetRadlen();
 	  m_caloStruct[i].ele_L0[ie] = m_materials[eleName]->GetNuclearInterLength();
-	  G4cout << "************ " << eleName << " layer " << i << " X0=" << m_caloStruct[i].ele_X0[ie] << " w=" << m_caloStruct[i].ele_thick[ie] << "mm, d=" << m_materials[eleName]->GetDensity() << G4endl;
+	  G4cout << "************ " << eleName << " layer " << i << " X0=" << m_caloStruct[i].ele_X0[ie] << " L0=" << m_caloStruct[i].ele_L0[ie] << " w=" << m_caloStruct[i].ele_thick[ie] << "mm, d=" << m_materials[eleName]->GetDensity();
+
+	  totalLengthX0 += m_caloStruct[i].ele_thick[ie]/m_caloStruct[i].ele_X0[ie];
+	  G4cout << " TotX0=" << totalLengthX0;// << G4endl;
+	  totalLengthL0 += m_caloStruct[i].ele_thick[ie]/m_caloStruct[i].ele_L0[ie];
+	  G4cout << " TotLambda=" << totalLengthL0 << G4endl;
 
 	  if (m_caloStruct[i].isSensitiveElement(ie)) m_logicSi.push_back(logi);
 	  
@@ -485,7 +657,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
       }//loop on elements
     }//loop on layers
- 
       //                                        
   // Visualization attributes
   //
