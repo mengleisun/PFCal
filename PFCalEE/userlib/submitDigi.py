@@ -34,6 +34,10 @@ enlist=[0]
 #if opt.dogun : enlist=[25]
 if opt.dogun : enlist=[10]#,300,400,500]
 
+<<<<<<< HEAD
+=======
+#INPATHPU="root://eoscms//eos/cms/store/user/msun/V12/MinBias/"
+>>>>>>> 73c5d0d0d022d2df6bedc2ccd110028fbe454fe7
 INPATHPU="root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V12/MinBias/"
 
 if opt.version==13:
@@ -42,14 +46,18 @@ elif opt.version==25:
     INPATHPU="root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V25/MinBias/"
 
 #nPuVtxlist=[0,140,200]
+<<<<<<< HEAD
 nPuVtxlist=[0]
+=======
+nPuVtxlist=[140,200]
+>>>>>>> 73c5d0d0d022d2df6bedc2ccd110028fbe454fe7
 
 #in %
 interCalibList=[2];#0,1,2,3,4,5,10,15,20,50]
 
 granularity='0-29:4,30-65:4'
-noise='0-65:0.14'
-threshold='0-65:2'
+noise='0-65:0.2'
+threshold='0-65:5'
 
 if (opt.version==8) :
     granularity='0-20:4,21-30:6'
@@ -57,8 +65,8 @@ if (opt.version==8) :
     threshold='0-30:2'
 elif opt.version<20 :
     granularity='0-19:4,20-29:4'
-    noise='0-29:0.14'
-    threshold='0-29:2'
+    noise='0-29:0.2'
+    threshold='0-29:5'
 elif (opt.version==21 or opt.version==24):
     granularity='0-23:6,24-33:8'
     noise='0-33:0.14'
@@ -71,11 +79,15 @@ elif opt.version==23:
     granularity='0-53:12'
     noise='0-53:0.14'
     threshold='0-53:2'
-elif opt.version>24:
+elif (opt.version>24 and opt.version<30):
     granularity='0-29:4,30-53:4,54-65:8'
     noise='0-53:0.14,54-65:0.2'
     threshold='0-53:2,54-65:4'
-    
+else:
+    granularity='0-51:4'
+    noise='0-51:0.2'
+    threshold='0-51:5'
+
 for nPuVtx in nPuVtxlist:
 
     for interCalib in interCalibList:
@@ -94,8 +106,14 @@ for nPuVtx in nPuVtxlist:
             outDir='%s/git_%s/version_%d/model_%d/%s/%s'%(opt.out,opt.gittag,opt.version,opt.model,opt.datatype,bval)
             if en>0 : outDir='%s/et_%d'%(outDir,en)
             eosDir='%s/git%s/%s'%(opt.eos,opt.gittag,opt.datatype)
+<<<<<<< HEAD
             eosDirIn='%s/git%s/%s'%(opt.eosin,opt.gittag,opt.datatype)
             if opt.alpha>0 : outDir='%s/eta_%3.3f/'%(outDir,opt.alpha) 
+=======
+            #eosDirIn='%s/git%s/%s'%(opt.eosin,opt.gittag,opt.datatype)
+            eosDirIn='%s'%(opt.eosin)
+            if opt.alpha>0 : outDir='%s/a_%3.3f/'%(outDir,opt.alpha) 
+>>>>>>> 73c5d0d0d022d2df6bedc2ccd110028fbe454fe7
             if opt.phi!=0.5 : outDir='%s/phi_%3.3fpi/'%(outDir,opt.phi) 
             if (opt.run>=0) : outDir='%s/run_%d/'%(outDir,opt.run)
         
