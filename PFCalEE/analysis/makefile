@@ -10,6 +10,7 @@ USERINCLUDES += -I$(ROOFITSYS)/include/
 USERINCLUDES += -isystem $(BOOSTSYS)/include
 
 USERINCLUDES += -Iinclude/ -I../userlib/include/ -I$(FASTJET_INSTALL)/include/
+USERINCLUDES += -I$(HEPMC_DIR)/include/
 
 # Define libraries to link
 USERLIBS += $(shell root-config --glibs) -lRooFit -lGenVector #-lTreePlayer -lTMVA
@@ -58,7 +59,11 @@ BINS=$(EXEDIR)/egammaResolution $(EXEDIR)/hadronResolution
 
 #BINS=$(EXEDIR)/vbfResolution $(EXEDIR)/calibration
 
+<<<<<<< HEAD
 #BINS=$(EXEDIR)/maxChargeStudy
+=======
+BINS=$(EXEDIR)/maxChargeStudy $(EXEDIR)/plotMomentum $(EXEDIR)/egammaResolution $(EXEDIR)/higgsResolution
+>>>>>>> 661a315b6a6b0b95a85fababa6ce61329f22b795
 
 SUBDIRS = ../userlib
 
@@ -74,8 +79,16 @@ $(SUBDIRS):
 #$(EXEDIR)/%:  $(TESTDIR)/%.cpp $(LIBDIR)/lib$(LIBNAME).so $(wildcard $(BASEDIR)/include/*.h*)
 #	$(CXX) -o $@ $(CXXFLAGS) $< $(LIBS) -L$(LIBDIR) -l$(LIBNAME)
 
+<<<<<<< HEAD
 #$(EXEDIR)/maxChargeStudy:  $(TESTDIR)/maxChargeStudy.cpp $(LIBDIR)/lib$(LIBNAME).so $(wildcard $(BASEDIR)/include/*.h*)
 #	$(CXX) -o $@ $(CXXFLAGS) $< $(LIBS) -L$(LIBDIR) -l$(LIBNAME)
+=======
+$(EXEDIR)/plotMomentum:  $(TESTDIR)/plotMomentum.cpp $(wildcard $(BASEDIR)/include/*.h*)
+	$(CXX) -o $@ $(CXXFLAGS) $< $(LIBS) -L$(HEPMC_DIR)lib -lHepMC #-lHepMCfio
+
+$(EXEDIR)/maxChargeStudy:  $(TESTDIR)/maxChargeStudy.cpp $(LIBDIR)/lib$(LIBNAME).so $(wildcard $(BASEDIR)/include/*.h*)
+	$(CXX) -o $@ $(CXXFLAGS) $< $(LIBS) -L$(LIBDIR) -l$(LIBNAME)
+>>>>>>> 661a315b6a6b0b95a85fababa6ce61329f22b795
 
 #$(EXEDIR)/MixPUSignal:  $(TESTDIR)/MixPUSignal.cpp $(LIBDIR)/lib$(LIBNAME).so $(wildcard $(BASEDIR)/include/*.h*)
 #	$(CXX) -o $@ $(CXXFLAGS) $< $(LIBS) -L$(LIBDIR) -l$(LIBNAME)

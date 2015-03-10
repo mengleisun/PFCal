@@ -55,7 +55,7 @@ bool HadEnergy::fillEnergies(const std::vector<HGCSSSamplingSection> * ssvec,
 			     HGCSSDetector & myDetector){
 
   p_spectrum->Reset();
-  double EFHCAL(0), EBHCAL(0);
+  double EE(0), EFHCAL(0), EBHCAL(0);
 
   int nSec = nSections_;
   double EmipMean[nSec];
@@ -80,9 +80,6 @@ bool HadEnergy::fillEnergies(const std::vector<HGCSSSamplingSection> * ssvec,
     unsigned sec =  myDetector.getSection(layer);
 
     double energy = lHit.energy();
-   
-   //temperorary solution
-    sec = sec-3;
  
     recSum[sec] += energy*absweight;
     EmipMean[sec] += energy;
@@ -94,14 +91,16 @@ bool HadEnergy::fillEnergies(const std::vector<HGCSSSamplingSection> * ssvec,
   for(unsigned iS(0); iS < nSec; iS++){
     if(nhits[iS]!=0)EmipMean[iS] = EmipMean[iS]/nhits[iS];
   }
-  EFHCAL = recSum[0];
-  EBHCAL = recSum[1]; 
+  EE = recSum[0] + recSum[1] + recSum[2];
+  EFHCAL = recSum[3];
+  EBHCAL = recSum[4]; 
 
   double GenMIP = genEn_ * 100;
   if(EFHCAL < GenMIP*0.95)p_spectrum_hightail->Add(p_spectrum);
   else if(EFHCAL > GenMIP*1.05)p_spectrum_lowtail->Add(p_spectrum);
   p_FHcalVsBHcal->Fill(EFHCAL, EBHCAL);  
 
+  EE_ = EE;
   EFHCAL_ = EFHCAL;
   EBHCAL_ = EBHCAL;
   

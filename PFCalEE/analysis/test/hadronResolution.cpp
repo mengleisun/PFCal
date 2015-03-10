@@ -1,7 +1,7 @@
-#include<string>
-#include<iostream>
-#include<fstream>
-#include<sstream>
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <boost/algorithm/string.hpp>
 
 #include "TFile.h"
@@ -42,7 +42,7 @@ int main(int argc, char** argv){//main
     return 1;
   }
 
-  unsigned genEn[]={30,40,50,60};
+  unsigned genEn[]={100};
   const unsigned nGenEn=sizeof(genEn)/sizeof(unsigned);
 
   //////////////////////////////////////////////////////////
@@ -90,7 +90,6 @@ int main(int argc, char** argv){//main
   std::cout << " -- Input parameters: " << std::endl
 	    << " -- Input file path: " << filePath << std::endl
 	    << " -- Output file path: " << outPath << std::endl
-	    << " -- Input energy is: " << genEn << " GeV." << std::endl
 	    << " -- Requiring " << nSiLayers << " si layers." << std::endl
 	    << " -- Processing ";
   if (pNevts == 0) std::cout << "all events." << std::endl;
@@ -100,14 +99,14 @@ int main(int argc, char** argv){//main
   //input file format
   ///////////////////////////////////////////////////////////////
 
-  std::size_t begin = simFileName.find("_e")+2;
-  std::size_t middle = simFileName.find(".root");
+  std::size_t begin = simFileName.find("_et")+3;
+  std::size_t middle = simFileName.find("_eta");
   std::size_t end = simFileName.find_last_of(".root")+1;
   std::string simHeader = simFileName.substr(0,begin);
   std::string simAppend = simFileName.substr(middle,end-middle);
 
-  std::size_t begin_rec = recoFileName.find("_e")+2;
-  std::size_t middle_rec = recoFileName.find(".root");
+  std::size_t begin_rec = recoFileName.find("_et")+3;
+  std::size_t middle_rec = recoFileName.find("_eta");
   std::size_t end_rec = recoFileName.find_last_of(".root")+1;
   std::string recHeader = recoFileName.substr(0,begin_rec);
   std::string recAppend = recoFileName.substr(middle_rec,end_rec-middle_rec);

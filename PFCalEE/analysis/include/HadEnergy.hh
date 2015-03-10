@@ -71,6 +71,7 @@ private:
   unsigned nSections_;
   double genEn_; 
 
+  double EE_;
   double EFHCAL_;
   double EBHCAL_;
   std::vector<double> LimMIP_;
