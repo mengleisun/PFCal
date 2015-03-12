@@ -165,6 +165,7 @@ int main(int argc, char** argv){//main
   if (nRuns == 0){
     if (!testInputFile(inputsim.str(),simFile)) return 1;
     lSimTree->AddFile(inputsim.str().c_str());
+    info =(HGCSSInfo*)simFile->Get("Info");
     if (!testInputFile(inputrec.str(),recFile)) return 1;
     lRecTree->AddFile(inputrec.str().c_str());
   }
