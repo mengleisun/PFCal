@@ -1,0 +1,9 @@
+for runN in {0..4};do ./submitDigi.py -q 2nd -v 12 -m 2 -g -d gamma -r ${runN} -a 1.7 -E /store/user/msun/V12/gamma/ -e /store/user/msun/V12/gamma/gitV00-03-00/gamma/PU140/ -t V00-03-00 -o ~/HGCal_02_14/PFCal/PFCalEE/V12/gamma; done
+
+for runN in {0..4};do ./submitDigi.py -q 2nd -v 12 -m 2 -g -d gamma -r ${runN} -a 1.9 -E /store/user/msun/V12/gamma/ -e /store/user/msun/V12/gamma/gitV00-03-00/gamma/PU140/ -t V00-03-00 -o ~/HGCal_02_14/PFCal/PFCalEE/V12/gamma; done
+
+for runN in {0..4};do ./submitDigi.py -q 2nd -v 12 -m 2 -g -d gamma -r ${runN} -a 2.3 -E /store/user/msun/V12/gamma/ -e /store/user/msun/V12/gamma/gitV00-03-00/gamma/PU140/ -t V00-03-00 -o ~/HGCal_02_14/PFCal/PFCalEE/V12/gamma; done
+
+for runN in {0..4};do ./submitDigi.py -q 2nd -v 12 -m 2 -g -d gamma -r ${runN} -a 2.5 -E /store/user/msun/V12/gamma/ -e /store/user/msun/V12/gamma/gitV00-03-00/gamma/PU140/ -t V00-03-00 -o ~/HGCal_02_14/PFCal/PFCalEE/V12/gamma; done
+
+./submitDigi.py -q 2nd -v 33 -m 2 -g -d pi+ -r 0 -a 2.0 -b 3.8 -E /store/cmst3/group/hgcal/Standalone/V33/gitV00-03-03/pi+/ -e /store/cmst3/group/hgcal/Standalone/V33/  -t V00-03-03 -o ~/HGCal_03_03/PFCal/PFCalEE/V33/digi/pi+/

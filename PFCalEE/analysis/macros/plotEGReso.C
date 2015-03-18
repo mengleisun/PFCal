@@ -31,11 +31,11 @@ struct FitResult{
 };
 
 double E(const unsigned pT, const unsigned eta){
-  return pT*cosh(eta/10.);
+  return pT*cosh(eta);
 };
 
 double pT(const unsigned E, const unsigned eta){
-  return E/cosh(eta/10.);
+  return E/cosh(eta);
 };
 
 void drawChi2(TCanvas *myc,TH1F ** p_chi2ndf){
@@ -43,55 +43,21 @@ void drawChi2(TCanvas *myc,TH1F ** p_chi2ndf){
   gStyle->SetOptStat("eMRuo");
   gStyle->SetStatH(0.4);
   gStyle->SetStatW(0.4);
-  for (unsigned iSR(0); iSR<8;++iSR){
+  for (unsigned iSR(0); iSR<5;++iSR){
     myc->cd(iSR+1);
     if (p_chi2ndf[iSR]) p_chi2ndf[iSR]->Draw();
   }
   
   myc->Update();
   std::ostringstream lsave;
-  lsave << "PLOTS/EnergyFitQuality.pdf";
+  lsave << "../PLOTS/EnergyFitQuality.pdf";
   myc->Print(lsave.str().c_str());
 }
 
-double absWeight(const unsigned layer, const double eta){
-  //already added to tree variables
-  return 1.;
-  double weight = 1.0;
-  if (layer == 0) weight = 0.0378011;
-  else if (layer == 1) weight = 1;
-  else if (layer == 2) weight = 0.646989;
-  else if (layer == 3) weight = 0.617619;
-  else if (layer == 4) weight = 0.646989;
-  else if (layer == 5) weight = 0.617619;
-  else if (layer == 6) weight = 0.646989;
-  else if (layer == 7) weight = 0.617619;
-  else if (layer == 8) weight = 0.646989;
-  else if (layer == 9) weight = 0.617619;
-  else if (layer == 10) weight = 0.646989;
-  else if (layer == 11) weight = 0.942829;
-  else if (layer == 12) weight = 0.859702;
-  else if (layer == 13) weight = 0.942829;
-  else if (layer == 14) weight = 0.859702;
-  else if (layer == 15) weight = 0.942829;
-  else if (layer == 16) weight = 0.859702;
-  else if (layer == 17) weight = 0.942829;
-  else if (layer == 18) weight = 0.859702;
-  else if (layer == 19) weight = 0.942829;
-  else if (layer == 20) weight = 0.859702;
-  else if (layer == 21) weight = 1.37644;
-  else if (layer == 22) weight = 1.30447;
-  else if (layer == 23) weight = 1.37644;
-  else if (layer == 24) weight = 1.30447;
-  else if (layer == 25) weight = 1.37644;
-  else if (layer == 26) weight = 1.30447;
-  else if (layer == 27) weight = 1.37644;
-  else if (layer == 28) weight = 1.30447;
-  else if (layer == 29) weight = 1.79662;
-  else weight = 1;
-  return weight/tanh(eta);
-};
 
+double absWeight(const unsigned layer, double eta){
+return 1;
+}
 
 TPad* plot_ratio(TPad *canv, bool up){
   canv->SetFillColor      (0);
@@ -147,7 +113,7 @@ unsigned fitEnergy(TH1F *hist,
   hist->Draw("PE");
 
 
-  double nRMSm = isr<1? 1 : 2;
+  double nRMSm = isr<3? 1:2;
   double nRMSp = 2;
   
   TF1 *fitResult = new TF1("fitResult","[0]*TMath::Gaus(x,[1],[2],0)",hist->GetXaxis()->GetXmin(),hist->GetXaxis()->GetXmax());
@@ -579,22 +545,22 @@ int plotEGReso(){//main
   bool dovsE = true;
   bool processNoFitFiles = false;
 
-  const unsigned nIC = 10;
-  const unsigned ICval[nIC] = {0,1,2,3,4,5,10,15,20,50};
+  const unsigned nIC = 1;
+  const unsigned ICval[nIC] = {2};
 
   const unsigned nPu = 2;//4;
   unsigned pu[nPu] = {0,0};//,140,200};
 
   const unsigned nS = 1;
   std::string scenario[nS] = {
-    "gamma/200um/"
+    "gamma/"
   };
 
-  std::string foutname = "PLOTS/PuSubtraction.root";
+  std::string foutname = "../PLOTS/PuSubtraction.root";
   TFile *fout = TFile::Open(foutname.c_str(),"RECREATE");
 
   const unsigned neta = 1;
-  unsigned eta[neta]={21};
+  double eta[neta]={2.000};
   //const unsigned neta = 7;
   //unsigned eta[neta]={17,19,21,23,25,27,29};
 
@@ -607,11 +573,11 @@ int plotEGReso(){//main
 
   
   const unsigned nV = 1;
-  TString version[nV] = {"12"};//,"0"};
+  TString version[nV] = {"30"};//,"0"};
   
-  const unsigned nLayers = 30;
+  const unsigned nLayers = 28;
 
-  const unsigned nSR = 8;
+  const unsigned nSR = 5;
   double fitQual[nSR];
   double srval[nSR];
   double srerr[nSR];
@@ -637,8 +603,8 @@ int plotEGReso(){//main
   
   std::ostringstream saveName;
 
-  unsigned genEnAll[]={3,5,7,10,20,30,40,50,60,70,80,90,100,125,150,175,200};
-  //unsigned genEnAll[]={7,10,20,30,40};
+  //unsigned genEnAll[]={5,10,20,40,60,80,100,150,200};
+  unsigned genEnAll[]={3,5,7,10,30,50,70,100,150};
   const unsigned nGenEnAll=sizeof(genEnAll)/sizeof(unsigned);
 
 
@@ -685,7 +651,7 @@ int plotEGReso(){//main
     
     TFile *fcalib;
     std::ostringstream label;
-    label << "PLOTS/CalibReso";
+    label << "../PLOTS/CalibReso";
     if (dovsE) label << "_vsE";
     label << "_IC" << ICval[ic];
     label << ".root";
@@ -694,13 +660,13 @@ int plotEGReso(){//main
     for (unsigned iV(0); iV<nV;++iV){//loop on versions
       for (unsigned iS(0); iS<nS;++iS){//loop on scenarios
 	
-	TString plotDir = "/afs/cern.ch/work/a/amagnan/PFCalEEAna/PLOTS/gitV00-02-12/version"+version[iV]+"/"+scenario[iS]+"/";
+	TString plotDir = "/afs/cern.ch/work/m/msun/HGCAL/PFCal/PFCalEE/analysis/PLOTS/gitV00-03-03/version"+version[iV]+"/"+scenario[iS]+"/";
 	TTree *ltree[neta][nPu][nGenEnAll];
 	TGraphErrors *resoRecoFit[nPu][neta][nSR];
 	
 	for (unsigned ieta(0);ieta<neta;++ieta){//loop on eta
 	  
-	  etaval[ieta] = eta[ieta]/10.;
+	  etaval[ieta] = eta[ieta];
 	  etaerr[ieta] = 0;
 	  
 	  for (unsigned ipu(0); ipu<nPu; ++ipu){//loop on pu
@@ -718,8 +684,8 @@ int plotEGReso(){//main
 	    TFile *inputFile = 0;
 	    std::ostringstream linputStr;
 	    if (pu[ipu]!=200) linputStr << plotDir ;
-	    else linputStr << "/afs/cern.ch/work/a/amagnan/PFCalEEAna/PLOTS/gitV00-02-12/version"+version[iV]+"/"+scenario[iS]+"/";
-	    linputStr << "eta" << eta[ieta] << "_et" << genEnAll[iE] << "_pu" << pu[ipu] << "_IC" << ICval[ic];
+	    else linputStr << "/afs/cern.ch/work/m/msun/HGCAL/PFCal/PFCalEE/analysis/PLOTS/gitV00-03-03/version"+version[iV]+"/"+scenario[iS]+"/";
+	    linputStr << "eta2.0" << "_et" << genEnAll[iE] << "_pu" << pu[ipu] << "_IC" << ICval[ic];
 	    if (!processNoFitFiles) linputStr << ".root";
 	    else linputStr << "_nofit.root";
 	    inputFile = TFile::Open(linputStr.str().c_str());
@@ -808,7 +774,7 @@ int plotEGReso(){//main
 	    std::ostringstream linputStr;
 	    if (pu[ipu]!=200) linputStr << plotDir ;
 	    else linputStr << "/afs/cern.ch/work/a/amagnan/PFCalEEAna/PLOTS/gitV00-02-12/version"+version[iV]+"/"+scenario[iS]+"/";
-	    linputStr << "eta" << eta[ieta] << "_et" << genEn[iE] << "_pu" << pu[ipu]  << "_IC" << ICval[ic];
+	    linputStr << "eta2.0" << "_et" << genEn[iE] << "_pu" << pu[ipu]  << "_IC" << ICval[ic];
 	    if (!processNoFitFiles) linputStr << ".root" ;
 	    else linputStr << "_nofit.root";
 	    inputFile = TFile::Open(linputStr.str().c_str());
@@ -926,7 +892,7 @@ int plotEGReso(){//main
 	    saveName << "_E" << genEn[iE] << pSuffix;
 	    mycE[iE]->Update();
 	    mycE[iE]->Print((saveName.str().c_str()+pSuffix)+".pdf");
-	    
+ 
 	    //fill sigma PU for lower energies
 	    if (ipu>1 && genEn[iE]>5 && genEn[iE]<40) {
 	      bool success = retrievePuSigma(ltree[ieta][1][oldIdx[iE]], ltree[ieta][ipu][oldIdx[iE]],

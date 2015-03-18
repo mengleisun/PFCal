@@ -1,0 +1,33 @@
+./submitDigi.py -q 2nd -v 12 -m 2 -g -a 0.361 -T 20 -P root://eoscms//eos/cms//store/user/msun/V12/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V12/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V12/PU0/Tr20/
+
+./submitDigi.py -q 2nd -v 12 -m 2 -g -a 0.297 -T 20 -P root://eoscms//eos/cms/store/user/msun/V12/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V12/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V12/PU0/Tr20/
+
+./submitDigi.py -q 2nd -v 12 -m 2 -g -a 0.244 -T 20 -P root://eoscms//eos/cms/store/user/msun/V12/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V12/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V12/PU0/Tr20/
+
+./submitDigi.py -q 2nd -v 12 -m 2 -g -a 0.200 -T 20 -P root://eoscms//eos/cms/store/user/msun/V12/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V12/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V12/PU0/Tr20/
+
+./submitDigi.py -q 2nd -v 12 -m 2 -g -a 0.164 -T 20 -P root://eoscms//eos/cms/store/user/msun/V12/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V12/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V12/PU0/Tr20/
+
+./submitDigi.py -q 2nd -v 12 -m 2 -g -a 0.134 -T 20 -P root://eoscms//eos/cms/store/user/msun/V12/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V12/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V12/PU0/Tr20/
+
+./submitDigi.py -q 2nd -v 12 -m 2 -g -a 0.110 -T 20 -P root://eoscms//eos/cms/store/user/msun/V12/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V12/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V12/PU0/Tr20/
+
+
+
+##for alpha in 0.361 0.297 0.244 0.200 0.164 0.134 0.110; do ./submitProd.py -s 2nd -q 1nw -t V00-02-13 -g -v 13 -m 2 -a ${alpha} -n 1000 -o /afs/cern.ch/user/m/msun/HGCal_02_14/PFCal/PFCalEE/V13/electron/ -e /store/cmst3/group/hgcal/Standalone/V13/e-  ; done
+
+./submitDigi.py -q 2nd -v 13 -m 2 -g -a 0.361 -T 20 -P root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V13/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V13/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V13/PU0/Tr20/
+
+./submitDigi.py -q 2nd -v 13 -m 2 -g -a 0.297 -T 20 -P root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V13/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V13/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V13/PU0/Tr20/
+
+./submitDigi.py -q 2nd -v 13 -m 2 -g -a 0.244 -T 20 -P root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V13/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V13/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V13/PU0/Tr20/
+
+./submitDigi.py -q 2nd -v 13 -m 2 -g -a 0.200 -T 20 -P root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V13/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V13/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V13/PU0/Tr20/
+
+./submitDigi.py -q 2nd -v 13 -m 2 -g -a 0.164 -T 20 -P root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V13/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V13/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V13/PU0/Tr20/
+
+./submitDigi.py -q 2nd -v 13 -m 2 -g -a 0.134 -T 20 -P root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V13/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V13/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V13/PU0/Tr20/
+
+./submitDigi.py -q 2nd -v 13 -m 2 -g -a 0.110 -T 20 -P root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V13/MinBias/ -e /store/cmst3/group/hgcal/Standalone/V13/e-/ -t V00-02-13 -o ~/HGCal_02_14/PFCal/PFCalEE/V13/PU0/Tr20/
+
+./submitProd.py -s 1nw -q 2nd -t V00-03-03 -g -d gamma -a 2.0 -b 3.8 -v 30 -m 2 -n 1000 -r 1 -o /afs/cern.ch/user/m/msun/HGCal_03_03/PFCal/PFCalEE/V30/ -e /store/cmst3/group/hgcal/Standalone/V30/

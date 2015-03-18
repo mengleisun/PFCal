@@ -257,6 +257,7 @@ int main(int argc, char** argv){//main
 
   TH1F *p_nGenPart = new TH1F("p_nGenPart",";n(genParticles)",200,0,200);
   TH1F *p_genPartId = new TH1F("p_genPartId",";pdgid",12000,-6000,6000);
+  TH1F *p_genEn = new TH1F("p_genEn",";genEn",10000,0,1000);
 
   TH1F *p_firstInteraction = new TH1F("p_firstInteraction",";layer with 1st nucl. int.",nLayers,0,nLayers);
 
@@ -406,7 +407,12 @@ int main(int argc, char** argv){//main
     }
 
     for (unsigned iP(0); iP<(*genvec).size(); ++iP){//loop on gen particles
+      double px = (*genvec)[iP].px()/1000.;
+      double py = (*genvec)[iP].py()/1000.;
+      double pz = (*genvec)[iP].pz()/1000.;
+      double genenergy = sqrt(px*px + py*py + pz*pz);
       p_genPartId->Fill((*genvec)[iP].pdgid());
+      p_genEn->Fill(genenergy);
     }//loop on gen particles
 
     p_nGenPart->Fill((*genvec).size());

@@ -1,0 +1,4 @@
+./bin/egammaResolution -c scripts/DefaultConfig.cfg -n 0 -i root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V30/gitV00-03-03/gamma/  --digifilePath=root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V30/gitV00-03-03/gamma/ -s HGcal_version30_model2_BON_et10_eta2.000  -r DigiIC2_version30_model2_BON_et10_eta2.000 -o ./PLOTS/gamma_et10_eta2.0.root --redoStep=0
+
+
+ ./submitEGReso.py -S -g -d gamma -v 30 -m 2 -r 2 -b 3.8 -t V00-03-03 -e /store/cmst3/group/hgcal/Standalone/V30/ -E /store/cmst3/group/hgcal/Standalone/V30/

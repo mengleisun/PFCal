@@ -62,7 +62,7 @@ TPad* plot_ratio(TCanvas *canv, bool up){
 int plotE(){//main
 
   const unsigned nSmear = 1;
-  TString smearFact[nSmear] = {"No smearing"};//,"1% smearing","2% smearing","3% smearing","4% smearing","5% smearing","7% smearing","10% smearing","15% smearing","20% smearing"};
+  TString smearFact[nSmear] = {"1% smearing"};//,"1% smearing","2% smearing","3% smearing","4% smearing","5% smearing","7% smearing","10% smearing","15% smearing","20% smearing"};
 
   //const unsigned nS = 7;
   //TString scenario[nS] = {"0","1","2","3","4","5","6"};
@@ -71,7 +71,7 @@ int plotE(){//main
     //"pi-/twiceSampling/GeVCal/MipThresh_0p5/ECALloss/"
     //"pi-/twiceSampling/GeVCal/EarlyDecay/MipThresh_0p5/"
     //"e-/twiceSampling/MipThresh_0p5/"
-    "gamma/200um/"
+    "e-/"
   };
 
   bool isCalib = scenario[0].find("calib")!=scenario[0].npos;
@@ -80,12 +80,12 @@ int plotE(){//main
 
   std::string particle = isEM? "e-":"pi-";
 
-  TString pSuffix = "_pu0";
+  TString pSuffix = "_pu0_IC2";
 
   unsigned rebinSim = 1;//4;//2;
   unsigned rebinReco = (isCalib && isEM) ? 2: isEM? 1 : 4;//2;//40;
 
-  bool addNoiseTerm = false;
+  bool addNoiseTerm = true;
   bool doReco = true;
 
   const unsigned nV = 1;
@@ -127,7 +127,10 @@ int plotE(){//main
   std::ostringstream saveName;
   bool isPU = false;
   
-  
+ 
+  double eta = 2.1;
+  double enfactor=cosh(eta);
+ 
   //unsigned genEn[]={15,20,25,30,40,50,60,80,100,150,200,300,400,500};//150,200,300,500};
   //unsigned genEn[]={5,10,15,20,30,50,60,80,100,400};//150,200,300,500};
   //unsigned genEn[]={10,15,18,20,25,30,35,40,45,50,60,80};
@@ -135,10 +138,16 @@ int plotE(){//main
   //500};//,1000,2000};
   //unsigned genEn[]={10,20,30,40,60,80};
   //unsigned genEn[]={40,50,60,80,100,200,300,400,500,1000,2000};
-  unsigned genEn[]={3,7,10,20,30,40,50,60,70,80,90,100,125,150,175,200};
+  //unsigned genEn[]={3,5,7,10,30,50,70,100,150};
+  unsigned genEt[]={2,5,10,60,80,100,150,200};
   //unsigned genEn[]={10,25,40,50,60,80};
   //unsigned genEn[]={10,40};
-  const unsigned nGenEn=sizeof(genEn)/sizeof(unsigned);
+  const unsigned nGenEn=sizeof(genEt)/sizeof(unsigned);
+  
+  double genEn[nGenEn];
+  for(unsigned iG(0); iG < nGenEn; iG++){
+      genEn[iG]=genEt[iG]*enfactor;
+  }
   unsigned rebin[20] = {4,4,4,6,6,
 			6,6,8,8,10,
 			10,10,100,100,100,
@@ -194,7 +203,7 @@ int plotE(){//main
       
       if (scenario[iS].find("PU") != scenario[iS].npos) isPU = true;
       
-      TString plotDir = "../PLOTS/gitV00-02-12/version"+version[iV]+"/"+scenario[iS]+"/";
+      TString plotDir = "../PLOTS/gitV00-02-13/version"+version[iV]+"/"+scenario[iS]+"/";
       //plotDir += "noWeights/";
       //TString plotDir = "../PLOTS/gitV00-01-00/version_"+version[iV]+"/scenario_"+scenario[iS]+"/";
       //TString plotDir = "../PLOTS/gitV00-01-00/version_"+version[iV]+"/";
@@ -225,7 +234,7 @@ int plotE(){//main
 	  std::ostringstream linputStr;
 	  if (doShower) linputStr << plotDir << "CalibHcalHistos_" << pSuffix << ".root";
 	  //else linputStr << plotDir << "validation_e" << genEn[iE] << pSuffix << ".root";
-	  else linputStr << plotDir << "eta25_et" << genEn[iE] << pSuffix << ".root";
+	  else linputStr << plotDir << "eta0.244_et" << genEt[iE] << pSuffix << ".root";
 	  inputFile = TFile::Open(linputStr.str().c_str());
 	  if (!inputFile) {
 	    std::cout << " -- Error, input file " << linputStr.str() << " cannot be opened. Exiting..." << std::endl;
@@ -304,11 +313,11 @@ int plotE(){//main
 		    << std::endl;
 
 	  //p_Etotal[iE]->Rebin(rebin[iE]);
-	  p_Etotal[iE]->Rebin(genEn[iE]<100?rebinSim:genEn[iE]<50?2*rebinSim:genEn[iE]<300?4*rebinSim:8*rebinSim);
+	  p_Etotal[iE]->Rebin(genEn[iE]<10?rebinSim:genEn[iE]<50?2*rebinSim:genEn[iE]<300?4*rebinSim:8*rebinSim);
 
 	  lName.str("");
 	  //lName << "p_Ereco" << pDetector;
-	  lName << "p_wgtEtotal";
+	  lName << "p_wgtESR2";
 	  p_Ereco[iE] = (TH1F*)gDirectory->Get(lName.str().c_str());
 	  if (!p_Ereco[iE]){
 	    std::cout << " -- ERROR, pointer for histogram Ereco is null. Running on G4 file before digitizer." << std::endl;

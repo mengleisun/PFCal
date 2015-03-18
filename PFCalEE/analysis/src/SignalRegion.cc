@@ -41,6 +41,58 @@ SignalRegion::SignalRegion(const std::string inputFolder,
     fzpos >> layerIndex >> zpos;
     zPos_.push_back(zpos);
   }
+    absweight_.clear();
+    absweight_.reserve(50);
+absweight_[0]=1;
+absweight_[1]=1.00258;
+absweight_[2]=0.984423;
+absweight_[3]=1.00258;
+absweight_[4]=0.984423;
+absweight_[5]=1.00258;
+absweight_[6]=0.984423;
+absweight_[7]=1.00258;
+absweight_[8]=0.984423;
+absweight_[9]=1.00258;
+ absweight_[10]=1.33536;
+ absweight_[11]=1.3627;
+ absweight_[12]=1.33536;
+ absweight_[13]=1.3627;
+ absweight_[14]=1.33536;
+ absweight_[15]=1.3627;
+ absweight_[16]=1.33536;
+ absweight_[17]=1.3627;
+ absweight_[18]=1.33536;
+ absweight_[19]=1.3627;
+ absweight_[20]=1.9495;
+ absweight_[21]=1.9629;
+ absweight_[22]=1.9495;
+ absweight_[23]=1.9629;
+ absweight_[24]=1.9495;
+ absweight_[25]=1.9629;
+ absweight_[26]=1.9495;
+ absweight_[27]=2.01643;
+ absweight_[28]=6.00121;
+ absweight_[29]=5.31468;
+ absweight_[30]=5.31468;
+ absweight_[31]=5.31468;
+ absweight_[32]=5.31468;
+ absweight_[33]=5.31468;
+ absweight_[34]=5.31468;
+ absweight_[35]=5.31468;
+ absweight_[36]=5.31468;
+ absweight_[37]=5.31468;
+ absweight_[38]=5.31468;
+ absweight_[39]=5.31468;
+ absweight_[40]=8.71728;
+ absweight_[41]=8.00569;
+ absweight_[42]=8.00569;
+ absweight_[43]=8.00569;
+ absweight_[44]=8.00569;
+ absweight_[45]=8.00569;
+ absweight_[46]=8.00569;
+ absweight_[47]=8.00569;
+ absweight_[48]=8.00569;
+ absweight_[49]=8.00569;
 }
 
 SignalRegion::~SignalRegion(){
@@ -144,21 +196,22 @@ bool SignalRegion::fillEnergies(const unsigned ievt,
  
   //fill weights for first event only: same in all events
   if (firstEvent_){
-    absweight_.clear();
-    absweight_.reserve(nLayers_);
+//    absweight_.clear();
+//    absweight_.reserve(nLayers_);
     std::cout << " -- Absorber weights used for total energy:" << std::endl;
     for(unsigned iL(0); iL<nLayers_; iL++){
-      double w = ssvec[iL].volX0trans()/ssvec[1].volX0trans();
-      std::cout << " - Layer " << iL << " w=" << w << std::endl;
-      absweight_.push_back(w);
+//      double w = ssvec[iL].volX0trans()/ssvec[1].volX0trans();
+//      std::cout << " - Layer " << iL << " w=" << w << std::endl;
+      std::cout << " - Layer " << iL << " w=" << absweight_[iL] << std::endl;
+//      absweight_.push_back(w);
     }
     firstEvent_=false;
   }
 
-  if (absweight_.size()!=nLayers_) {
-    std::cout << " -- Error! Not all layers found! Only: " << absweight_.size() << ". Fix code." << std::endl;
-    exit(1);
-  }
+//  if (absweight_.size()!=nLayers_) {
+//    std::cout << " -- Error! Not all layers found! Only: " << absweight_.size() << ". Fix code." << std::endl;
+//    exit(1);
+//  }
   
     //initialise values for current event
   evtIdx_ = ievt;

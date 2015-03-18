@@ -1,0 +1,1 @@
+./bin/hadronResolution 0 root://eoscms//eos/cms/store/cmst3/group/hgcal/Standalone/V31/gitV00-03-03/e-/ HGcal_version31_model2_BON_et5_eta2.000.root DigiIC2_version31_model2_BON_et5_eta2.000.root PLOTS/gitV00-03-03/version31/pi+/hadron.root 3

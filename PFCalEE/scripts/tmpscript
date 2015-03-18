@@ -1,0 +1,4 @@
+
+
+for pile in {26,27};do eos cp /eos/cms/store/cmst3/group/hgcal/Standalone/V12/MinBias/pile_${pile}/gitV00-03-00/e-/HGcal_version12_model2_BOFF.root /eos/cms/store/cmst3/group/hgcal/Standalone/V12/MinBias/HGcal_version12_model2_BOFF_MinBias_${pile}.root; eos rm -r /store/cmst3/group/hgcal/Standalone/V12/MinBias/pile_${pile}; done 
+

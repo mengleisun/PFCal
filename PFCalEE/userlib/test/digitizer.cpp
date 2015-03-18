@@ -351,7 +351,7 @@ int main(int argc, char** argv){//main
   if (pSaveDigis) outputTree->Branch("HGCSSDigiHitVec","std::vector<HGCSSRecoHit>",&lDigiHits);
   outputTree->Branch("HGCSSRecoHitVec","std::vector<HGCSSRecoHit>",&lRecoHits);
   if (pMakeJets) outputTree->Branch("HGCSSRecoJetVec","std::vector<HGCSSRecoJet>",&lCaloJets);
-  TH1F * p_noise = new TH1F("noiseCheck",";noise (MIPs)",100,-5,5);
+  TH1F * p_noise = new TH1F("noiseCheck",";noise (MIPs)",1000,-5,5);
 
 
   /////////////////////////////////////////////////////////////
