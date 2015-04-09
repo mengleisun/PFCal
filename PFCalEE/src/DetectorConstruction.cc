@@ -52,11 +52,12 @@ DetectorConstruction::DetectorConstruction(G4int ver, G4int mod) : version_(ver)
 	break;
       }
 
-    case v_HGCALEE_v6: case v_HGCAL_v6:
+    case v_HGCALEE_v6: case v_HGCAL_v6: case v_HGCAL_v624:
       {
 	G4cout << "[DetectorConstruction] starting v_HCALEE_v6"<< G4endl;
 	G4double airThick = 3*mm;
 	G4double pcbThick = 2*mm;
+        G4int Nmodule = 4;
 
 	std::vector<G4double> lThickL;
 	std::vector<std::string> lEleL;
@@ -84,6 +85,11 @@ DetectorConstruction::DetectorConstruction(G4int ver, G4int mod) : version_(ver)
 	lThickR.push_back(pcbThick);lEleR.push_back("PCB");
 	lThickR.push_back(airThick);lEleR.push_back("Air");
 
+        if(version_ = v_HGCAL_v624){
+            lThickL[4] = 2.622*mm;
+            lThickR[0] = 1.6784*mm;
+            lThickR[2] = 1.6784*mm;
+        }
 	m_caloStruct.push_back( SamplingSection(lThickL,lEleL) );
 	m_caloStruct.push_back( SamplingSection(lThickR,lEleR) );
 
@@ -99,15 +105,30 @@ DetectorConstruction::DetectorConstruction(G4int ver, G4int mod) : version_(ver)
 	lThickL.push_back(0.1*mm);lEleL.push_back("Si");
 	lThickL.push_back(0.1*mm);lEleL.push_back("Si");
 	lThickL.push_back(0.1*mm);lEleL.push_back("Si");
-	for(unsigned i=0; i<4; i++) {
+
+        Nmodule = 4;
+        if(version_ == v_HGCAL_v624){
+            lThickL[2] = 2.622*mm;
+            lThickR[0] = 0.9284*mm;
+            lThickR[2] = 0.9284*mm;
+            Nmodule = 3;
+        }
+	for(unsigned i=0; i<Nmodule; i++) {
 	  m_caloStruct.push_back( SamplingSection(lThickL,lEleL) );
 	  m_caloStruct.push_back( SamplingSection(lThickR,lEleR) );
 	}
 
+        Nmodule = 5;
+        if(version_ == v_HGCAL_v624){
+            lThickL[2] = 3.622*mm;
+            lThickR[0] = 1.6784*mm;
+            lThickR[2] = 1.6784*mm;
+            Nmodule = 4;
+        }
 	lThickL[2] = 2.8*mm;
 	lThickR[0] = 1.2*mm;
 	lThickR[2] = 1.2*mm;
-	for(unsigned i=0; i<5; i++) {
+	for(unsigned i=0; i< Nmodule; i++) {
 	  m_caloStruct.push_back( SamplingSection(lThickL,lEleL) );
 	  m_caloStruct.push_back( SamplingSection(lThickR,lEleR) );
 	}
