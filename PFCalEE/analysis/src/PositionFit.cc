@@ -79,7 +79,7 @@ PositionFit::PositionFit(const unsigned nSR,
   nSR_ = nSR;
   residualMax_ = residualMax;
   chi2ndfmax_ = 20;
-  seedMipThreshold_ = 10;
+  seedMipThreshold_ = 20;
   maxdR_ = 0.1;
   nLayers_ = nLayers;
   nSiLayers_ = nSiLayers;
@@ -88,7 +88,7 @@ PositionFit::PositionFit(const unsigned nSR,
   fixForPuMixBug_ = applyPuMixFix;
   doMatrix_ = doMatrix;
   saveEtree_ = true;
-  doLogWeight_ = true;
+  doLogWeight_ = false;
 
   p_nGenParticles = 0;
   //p_numberOfMaxTried = 0;
@@ -912,7 +912,7 @@ bool PositionFit::getInitialPosition(const unsigned ievt,
   
   p_mindRtruth->Fill(dRmin);
   
-  if (dRmin > 0.01) {
+  if (dRmin > 0.1) {
     nTooFar++;
     return false;
   }
@@ -1747,11 +1747,11 @@ unsigned PositionFit::fitEvent(const unsigned ievt,
 	p_fitYvsLayer->Fill(layerId[iL],y);
 	//eventPos[layerId[iL]] = ROOT::Math::XYZVector(x,y,posz[iL]);
       }
-      fit.found = true;
-      fit.pos_x = position[0];
-      fit.tanangle_x = TanAngle[0][0];
-      fit.pos_y = position[1];
-      fit.tanangle_y = TanAngle[0][1];
+//      fit.found = true;
+//      fit.pos_x = position[0];
+//      fit.tanangle_x = TanAngle[0][0];
+//      fit.pos_y = position[1];
+//      fit.tanangle_y = TanAngle[0][1];
     }//reco
     else {
       fout_ << " " << position[0]
@@ -1759,6 +1759,11 @@ unsigned PositionFit::fitEvent(const unsigned ievt,
 	    << " " << position[1]
 	    << " " << TanAngle[1][1]
 	    << std::endl;
+      fit.found = true;
+      fit.pos_x = position[0];
+      fit.tanangle_x = TanAngle[1][0];
+      fit.pos_y = position[1];
+      fit.tanangle_y = TanAngle[1][1];
     }//truth
 
   }//reco or truth

@@ -165,6 +165,7 @@ int main(int argc, char** argv){//main
   if (nRuns == 0){
     if (!testInputFile(inputsim.str(),simFile)) return 1;
     lSimTree->AddFile(inputsim.str().c_str());
+    info =(HGCSSInfo*)simFile->Get("Info");
     if (!testInputFile(inputrec.str(),recFile)) return 1;
     lRecTree->AddFile(inputrec.str().c_str());
   }
@@ -206,7 +207,13 @@ int main(int argc, char** argv){//main
   const double cellSize = info->cellSize();
   const unsigned versionNumber = info->version();
   const unsigned model = info->model();
-  
+ 
+//  const double cellSize = 2.5;
+//  const unsigned versionNumber = 30;
+//  const unsigned model = 2;
+
+
+ 
   //models 0,1 or 3.
   //bool isTBsetup = (model != 2);
   bool isCaliceHcal = versionNumber==23;//inFilePath.find("version23")!=inFilePath.npos || inFilePath.find("version_23")!=inFilePath.npos;

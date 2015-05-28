@@ -41,6 +41,58 @@ SignalRegion::SignalRegion(const std::string inputFolder,
     fzpos >> layerIndex >> zpos;
     zPos_.push_back(zpos);
   }
+    absweight_.clear();
+    absweight_.reserve(50);
+absweight_[0]=1;
+absweight_[1]=1.00258;
+absweight_[2]=0.984423;
+absweight_[3]=1.00258;
+absweight_[4]=0.984423;
+absweight_[5]=1.00258;
+absweight_[6]=0.984423;
+absweight_[7]=1.00258;
+absweight_[8]=0.984423;
+absweight_[9]=1.00258;
+ absweight_[10]=1.33536;
+ absweight_[11]=1.3627;
+ absweight_[12]=1.33536;
+ absweight_[13]=1.3627;
+ absweight_[14]=1.33536;
+ absweight_[15]=1.3627;
+ absweight_[16]=1.33536;
+ absweight_[17]=1.3627;
+ absweight_[18]=1.33536;
+ absweight_[19]=1.3627;
+ absweight_[20]=1.9495;
+ absweight_[21]=1.9629;
+ absweight_[22]=1.9495;
+ absweight_[23]=1.9629;
+ absweight_[24]=1.9495;
+ absweight_[25]=1.9629;
+ absweight_[26]=1.9495;
+ absweight_[27]=2.01643;
+ absweight_[28]=6.00121;
+ absweight_[29]=5.31468;
+ absweight_[30]=5.31468;
+ absweight_[31]=5.31468;
+ absweight_[32]=5.31468;
+ absweight_[33]=5.31468;
+ absweight_[34]=5.31468;
+ absweight_[35]=5.31468;
+ absweight_[36]=5.31468;
+ absweight_[37]=5.31468;
+ absweight_[38]=5.31468;
+ absweight_[39]=5.31468;
+ absweight_[40]=8.71728;
+ absweight_[41]=8.00569;
+ absweight_[42]=8.00569;
+ absweight_[43]=8.00569;
+ absweight_[44]=8.00569;
+ absweight_[45]=8.00569;
+ absweight_[46]=8.00569;
+ absweight_[47]=8.00569;
+ absweight_[48]=8.00569;
+ absweight_[49]=8.00569;
 }
 
 SignalRegion::~SignalRegion(){
@@ -71,8 +123,9 @@ bool SignalRegion::initialiseFitPositions(){
     unsigned eventIndex = nevt_;
     double xpos(0),ypos(0),xangle(0),yangle(0);
     double fitMatrix[4] = {0,0,0,0};
-    double xpost(0),ypost(0),xanglet(0),yanglet(0);
-    fxypos >> eventIndex >> xpos >> fitMatrix[0] >> xangle >> fitMatrix[1] >> ypos >> fitMatrix[2] >> yangle >> fitMatrix[3] >> xpost >> xanglet >> ypost >> yanglet;
+    double truthPos[4];
+    fxypos >> eventIndex >> xpos >> fitMatrix[0] >> xangle >> fitMatrix[1] >> ypos >> fitMatrix[2] >> yangle >> fitMatrix[3] >> truthPos[0] >> truthPos[1] >> truthPos[2] >> truthPos[3];
+
     //testing for nan
     if ( eventIndex != eventIndex || xpos != xpos || fitMatrix[0]!=fitMatrix[0] || xangle!=xangle || fitMatrix[1]!=fitMatrix[1] || ypos!=ypos || fitMatrix[2]!=fitMatrix[2] || yangle!=yangle || fitMatrix[3]!=fitMatrix[3]){
       std::cout << " Found nan ! Fix code !" << std::endl;
@@ -141,27 +194,24 @@ bool SignalRegion::fillEnergies(const unsigned ievt,
 				const std::vector<HGCSSRecoHit> & rechitvec,
 				const unsigned nPuVtx,
 				const FitResult & fit){
-  
+ 
+  ievt_ = ievt; 
  
   //fill weights for first event only: same in all events
+
   if (firstEvent_){
-    absweight_.clear();
-    absweight_.reserve(nLayers_);
+//    absweight_.clear();
+//    absweight_.reserve(nLayers_);
     std::cout << " -- Absorber weights used for total energy:" << std::endl;
     for(unsigned iL(0); iL<nLayers_; iL++){
-      double w = ssvec[iL].volX0trans()/ssvec[1].volX0trans();
-      std::cout << " - Layer " << iL << " w=" << w << std::endl;
-      absweight_.push_back(w);
+//      double w = ssvec[iL].volX0trans()/ssvec[1].volX0trans();
+//      std::cout << " - Layer " << iL << " w=" << w << std::endl;
+      std::cout << " - Layer " << iL << " w=" << absweight_[iL] << std::endl;
+//      absweight_.push_back(w);
     }
     firstEvent_=false;
   }
 
-  if (absweight_.size()!=nLayers_) {
-    std::cout << " -- Error! Not all layers found! Only: " << absweight_.size() << ". Fix code." << std::endl;
-    exit(1);
-  }
-  
-    //initialise values for current event
   evtIdx_ = ievt;
   totalE_ = 0;
   wgttotalE_ = 0;
@@ -188,6 +238,7 @@ bool SignalRegion::fillEnergies(const unsigned ievt,
   std::vector<ROOT::Math::XYZPoint> eventPos;
   eventPos.resize(nLayers_,ROOT::Math::XYZPoint(0,0,0));
   for (unsigned iL(0); iL<nLayers_;++iL){
+  //  eventPos[iL] = getAccuratePos(fit,iL);
     eventPos[iL] = getAccuratePos(fit,iL);
   }
 
@@ -268,10 +319,20 @@ bool SignalRegion::fillEnergies(const unsigned ievt,
       }
     }
   }//loop on hits
-  
-  outputFile_->cd(outputDir_.c_str());
-  fillHistograms();
-  outtree_->Fill();
+ 
+  double enEE(0), enEH(0);
+  for(unsigned iL(0); iL < 28 ;iL++){
+     enEE += getSR(2, iL, false);
+  }
+  for(unsigned iL(28); iL< nLayers_;iL++){
+     enEH += getSR(2, iL, false);
+  }
+  if(enEH/enEE < 0.001){
+
+      outputFile_->cd(outputDir_.c_str());
+      fillHistograms();
+      outtree_->Fill();
+  }
   return true;
 }
 
@@ -358,7 +419,7 @@ void SignalRegion::fillHistograms(){
     //p_rawESR[iSR]->Fill( getEtotalSR(iSR, subtractPU));
 
     double wgtESR = 0;
-    for(unsigned iL(0); iL < nLayers_;iL++){
+    for(unsigned iL(0); iL < 28;iL++){
       wgtESR += getSR(iSR, iL, subtractPU);
     }
     p_wgtESR[iSR]->Fill(wgtESR);
@@ -367,7 +428,7 @@ void SignalRegion::fillHistograms(){
     subtractPU = true;
     //p_rawSubtractESR[iSR]->Fill( getEtotalSR(iSR, subtractPU));
     double wgtSubtractESR = 0;
-    for(unsigned iL(0); iL < nLayers_;iL++){
+    for(unsigned iL(0); iL < 28;iL++){
       wgtSubtractESR += getSR(iSR, iL, subtractPU);
     }
     p_wgtSubtractESR[iSR]->Fill(wgtSubtractESR);

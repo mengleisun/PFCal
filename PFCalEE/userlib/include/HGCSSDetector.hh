@@ -118,6 +118,15 @@ public:
       indices_[5] = 52;
       indices_[6] = 52;
     }
+    else if (versionNumber == 34){
+      indices_[0] = 0;
+      indices_[1] = 8;
+      indices_[2] = 16;
+      indices_[3] = 24;
+      indices_[4] = 36;
+      indices_[5] = 48;
+      indices_[6] = 48;
+    }
     else {
       indices_[0] = 0;
       indices_[1] = versionNumber==24?11:10;

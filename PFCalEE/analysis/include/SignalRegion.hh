@@ -118,6 +118,7 @@ private:
   unsigned nSkipped_;
   bool firstEvent_;
 
+  unsigned ievt_;
   //for tree
   unsigned evtIdx_;
   double totalE_;

@@ -30,8 +30,8 @@ parser.add_option('-S', '--no-submit'   ,    action="store_true",  dest='nosubmi
 (opt, args) = parser.parse_args()
 
 enlist=[0]
-#if opt.dogun : enlist=[3,5,7,10,20,30,40,50,60,70,80,90,100,125,150,175,200]
-if opt.dogun : enlist=[60]
+if opt.dogun : enlist=[3,5,7,10,30,50,70,100,150,200]
+#if opt.dogun : enlist=[60]
 #if opt.dogun : enlist=[2,5,10,20,40,60,80,100,150,200]#,300,400,500]
 
 #INPATHPU="root://eoscms//eos/cms/store/user/msun/V12/MinBias/"
@@ -51,7 +51,7 @@ nPuVtxlist=[0]
 interCalibList=[2];#0,1,2,3,4,5,10,15,20,50]
 
 granularity='0-29:4,30-65:4'
-noise='0-65:0.15'
+noise='0-65:0.12'
 threshold='0-65:5'
 
 if (opt.version==8) :
@@ -80,7 +80,7 @@ elif (opt.version>24 and opt.version<30):
     threshold='0-53:2,54-65:4'
 else:
     granularity='0-51:4'
-    noise='0-51:0.15'
+    noise='0-51:0.12'
     threshold='0-51:5'
 
 for nPuVtx in nPuVtxlist:
@@ -122,7 +122,7 @@ for nPuVtx in nPuVtxlist:
             if opt.phi!=0.5 : outTag='%s_phi%3.3fpi'%(outTag,opt.phi) 
             if (opt.run>=0) : outTag='%s_run%d'%(outTag,opt.run)
             scriptFile.write('localdir=`pwd`\n')
-            scriptFile.write('%s/bin/digitizer %d root://eoscms//eos/cms%s/HGcal_%s.root $localdir/ %s %s %s %d %d %s | tee %s\n'%(os.getcwd(),opt.nevts,eosDirIn,outTag,granularity,noise,threshold,interCalib,nPuVtx,INPATHPU,outlog))
+            scriptFile.write('%s/bin/digitizer %d %s/HGcal_%s.root $localdir/ %s %s %s %d %d %s | tee %s\n'%(os.getcwd(),opt.nevts,eosDirIn,outTag,granularity,noise,threshold,interCalib,nPuVtx,INPATHPU,outlog))
             scriptFile.write('echo "--Local directory is " $localdir >> %s\n'%(g4log))
             scriptFile.write('ls * >> %s\n'%(g4log))
             if len(opt.eos)>0:
